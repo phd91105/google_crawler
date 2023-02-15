@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { chat, getWiki, searchGoogle } from "../controllers/index.js";
+import { chat, getWiki, searchGoogle } from "../controllers";
 
 const router = Router();
 

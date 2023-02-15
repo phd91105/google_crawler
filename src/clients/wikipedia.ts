@@ -1,4 +1,4 @@
-import { axios } from "../config/index.js";
+import { axios } from "../config";
 import { load } from "cheerio";
 
 export const loadLink = async (text: string) => {

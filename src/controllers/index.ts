@@ -1,7 +1,11 @@
-import { chatGpt, googleSearch } from "../clients/index.js";
+import {
+  chatGpt,
+  googleSearch,
+  loadContent,
+  loadLink,
+  spellingCorrection,
+} from "../clients";
 import { Request, Response } from "express";
-import { spellingCorrection } from "../clients/google.js";
-import { loadContent, loadLink } from "../clients/wikipedia.js";
 import _ from "lodash";
 
 export const searchGoogle = async (request: Request, response: Response) => {

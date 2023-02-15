@@ -11,5 +11,5 @@ export const ggConfig = {
   num: 10,
 };
 
-export { api } from "./openAI.js";
+export { api } from "./openai.js";
 export { instance as axios } from "./axios.js";

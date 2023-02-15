@@ -1,2 +1,3 @@
-export { search as googleSearch } from "./google.js";
-export { chat as chatGpt } from "./chatgpt.js";
+export { search as googleSearch, spellingCorrection } from "./google";
+export { chat as chatGpt } from "./chatgpt";
+export { loadLink, loadContent } from "./wikipedia";

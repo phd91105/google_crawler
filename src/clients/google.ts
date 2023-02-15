@@ -1,5 +1,5 @@
 import { customsearch } from "@googleapis/customsearch";
-import { axios, ggConfig } from "../config/index.js";
+import { axios, ggConfig } from "../config";
 
 export const search = async (query: string) => {
   const customSearch = customsearch("v1");
@@ -10,7 +10,7 @@ export const search = async (query: string) => {
       ...ggConfig,
       q: `${query}`,
     });
-    results = result;
+    results = result.data.items;
   }
 
   return results || [];
