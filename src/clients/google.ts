@@ -1,23 +1,33 @@
 import { customsearch } from "@googleapis/customsearch";
 import { AxiosResponse } from "axios";
-import { axios, ggConfig } from "../config";
+import { axios, googleConfig } from "../config";
+import { cleanText } from "../utils";
 
-export const searchOnGoogle = async (query: string) => {
+export const searchOnGoogle = async (query: string, config = googleConfig) => {
   const customSearch = customsearch("v1");
-  let results;
-
-  if (query) {
-    const response = await customSearch.cse.siterestrict.list({
-      ...ggConfig,
-      q: query,
-    });
-    results = response.data.items || [];
+  if (!query) {
+    return [];
   }
 
-  return results || [];
+  try {
+    const response = await customSearch.cse.siterestrict.list({
+      ...config,
+      q: query,
+    });
+
+    return response.data.items || [];
+  } catch {
+    return [];
+  }
 };
 
 export const correctSpelling = async (text: string): Promise<string> => {
+  const getCorrectedText = (response: AxiosResponse) => {
+    const data = JSON.parse(response.data.split("\n").pop());
+    const correctedText = data.pop().o;
+    return cleanText(correctedText);
+  };
+
   try {
     const response = await axios.get("/complete/search", {
       baseURL: "https://www.google.com",
@@ -32,17 +42,7 @@ export const correctSpelling = async (text: string): Promise<string> => {
     const correctedText = getCorrectedText(response);
 
     return correctedText;
-  } catch (error) {
+  } catch {
     return text;
   }
-};
-
-const cleanText = (text: string) => {
-  return text.replace(/<[/]?\w+>/g, "").trim();
-};
-
-const getCorrectedText = (response: AxiosResponse) => {
-  const data = JSON.parse(response.data.split("\n").pop());
-  const correctedText = data.pop().o;
-  return cleanText(correctedText);
 };

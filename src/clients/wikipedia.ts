@@ -1,7 +1,7 @@
 import { axios } from "../config";
 import { load } from "cheerio";
 import { searchOnGoogle } from "./index";
-import { makePattern } from "../utils";
+import { cleanText, makePattern } from "../utils";
 import { keywords } from "../constants";
 
 export const getWikipediaLink = async (text: string, lang = "vi") => {
@@ -31,43 +31,44 @@ export const getWikipediaLink = async (text: string, lang = "vi") => {
     }
 
     return link;
-  } catch (error) {
-    console.error(error);
+  } catch {
     return null;
   }
 };
 
 export const getWikipediaContent = async (link: string | null) => {
-  if (!link) {
-    return null;
-  }
-
-  try {
-    const response = await axios.get(link);
-    const $ = load(response.data);
+  const getMatches = (text: string, pattern: RegExp) => {
     const matches: string[] = [];
-    let text = "";
-
-    const paragraphs = $(
-      "#bodyContent > #mw-content-text > .mw-parser-output > p"
-    );
-    const numParagraphs = paragraphs.length;
-
-    for (let i = 0; i < numParagraphs; i++) {
-      text += $(paragraphs[i]).text() + ". ";
-    }
-
-    const pattern = makePattern(keywords);
-
-    text.split(".").forEach((item) => {
-      if (pattern.test(item)) {
-        matches.push(item.trim());
+    const sentences = text.split(".");
+    matches.push(cleanText(sentences[0]));
+    sentences.slice(1).forEach((sentence) => {
+      if (pattern.test(sentence)) {
+        matches.push(cleanText(sentence));
       }
     });
+    return matches;
+  };
 
+  let matches: string[] = [];
+  let text = "";
+
+  if (!link) {
     return { matches, text };
-  } catch (error) {
-    console.error(error);
-    return null;
   }
+
+  const response = await axios.get(link);
+  const $ = load(response.data);
+
+  const paragraphs = $(
+    "#bodyContent > #mw-content-text > .mw-parser-output > p"
+  );
+
+  paragraphs.each((_, element) => {
+    text += $(element).text() + ". ";
+  });
+
+  const pattern = makePattern(keywords);
+  matches = getMatches(text, pattern);
+
+  return { matches, text };
 };
