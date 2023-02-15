@@ -17,19 +17,23 @@ export const search = async (query: string) => {
 };
 
 export const spellingCorrection = async (text: string) => {
-  const result = await axios.get("/complete/search", {
-    baseURL: "https://www.google.com",
-    params: {
-      q: `${text}`,
-      client: "gws-wiz-serp",
-      xssi: "t",
-      hl: "vi",
-    },
-  });
-  const textResult = JSON.parse(result.data.split("\n").pop())
-    .pop()
-    .o.replace(/<[/]?\w+>/g, "")
-    .trim();
+  try {
+    const result = await axios.get("/complete/search", {
+      baseURL: "https://www.google.com",
+      params: {
+        q: `${text}`,
+        client: "gws-wiz-serp",
+        xssi: "t",
+        hl: "vi",
+      },
+    });
+    const textResult = JSON.parse(result.data.split("\n").pop())
+      .pop()
+      .o.replace(/<[/]?\w+>/g, "")
+      .trim();
 
-  return textResult;
+    return textResult;
+  } catch (error) {
+    return text;
+  }
 };

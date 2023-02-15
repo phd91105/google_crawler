@@ -2,6 +2,7 @@ import { axios } from "../config/index.js";
 import { load } from "cheerio";
 
 export const loadLink = async (text: string) => {
+  if (!text) return null;
   const result = await axios.get("/w/rest.php/v1/search/page", {
     baseURL: "https://vi.wikipedia.org",
     params: {
