@@ -1,7 +1,7 @@
-import { api } from "../config";
+import { openai } from "../config";
 
 export const chat = async (message: string) => {
-  const data = await api.sendMessage(message);
+  const data = await openai.sendMessage(message);
 
   return data;
 };

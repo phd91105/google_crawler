@@ -1,28 +1,33 @@
 import {
   chatGpt,
-  googleSearch,
-  loadContent,
-  loadLink,
-  spellingCorrection,
+  searchOnGoogle,
+  getWikipediaContent,
+  getWikipediaLink,
+  correctSpelling,
 } from "../clients";
 import { Request, Response } from "express";
 import _ from "lodash";
+import { HttpStatusCode } from "axios";
 
 export const searchGoogle = async (request: Request, response: Response) => {
   try {
-    const result = await googleSearch(request.body.q);
-    return response.json(result);
+    const result = await searchOnGoogle(request.body.q);
+    return response.status(HttpStatusCode.Ok).json(result);
   } catch (error) {
-    return response.json({ error });
+    return response
+      .status(HttpStatusCode.InternalServerError)
+      .json({ error: "searchGoogle" });
   }
 };
 
 export const chat = async (request: Request, response: Response) => {
   try {
     const result = await chatGpt(request.body.message);
-    return response.json(result);
+    return response.status(HttpStatusCode.Ok).json(result);
   } catch (error) {
-    return response.json({ error });
+    return response
+      .status(HttpStatusCode.InternalServerError)
+      .json({ error: "chat" });
   }
 };
 
@@ -30,34 +35,41 @@ export const spelling = async (request: Request, response: Response) => {
   try {
     const promises = [];
     for (const word of request.body.words) {
-      promises.push(spellingCorrection(word));
+      promises.push(correctSpelling(word));
     }
     const result = await Promise.all(promises);
-    return response.json(result);
+    return response.status(HttpStatusCode.Ok).json(result);
   } catch (error) {
-    return response.json({ error });
+    return response
+      .status(HttpStatusCode.InternalServerError)
+      .json({ error: "spelling" });
   }
 };
 
-export const getWiki = async (request: Request, response: Response) => {
+export const getWikiData = async (request: Request, response: Response) => {
   try {
-    const result = {};
+    const wikiData = {};
 
-    const textArray = await Promise.all(
-      request.body.words.map((word: string) => spellingCorrection(word))
-    );
-    const linkWiki = await Promise.all(textArray.map((text) => loadLink(text)));
-
-    const content = await Promise.all(
-      textArray.map((_, index) => loadContent(linkWiki[index]))
+    const correctedWords = await Promise.all(
+      request.body.words.map((word: string) => correctSpelling(word))
     );
 
-    textArray.forEach((text, index) => {
-      _.set(result, _.camelCase(text), content[index]);
+    const wikipediaLinks = await Promise.all(
+      correctedWords.map((word) => getWikipediaLink(word, request.body.lang))
+    );
+
+    const wikipediaContents = await Promise.all(
+      wikipediaLinks.map((link) => getWikipediaContent(link))
+    );
+
+    correctedWords.forEach((word, index) => {
+      _.set(wikiData, _.camelCase(word), wikipediaContents[index]);
     });
 
-    return response.json(result);
+    return response.status(HttpStatusCode.Ok).json(wikiData);
   } catch (error) {
-    return response.json({ error });
+    return response
+      .status(HttpStatusCode.InternalServerError)
+      .json({ error: "getWikiData" });
   }
 };

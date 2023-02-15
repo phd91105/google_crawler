@@ -1,3 +1,3 @@
-export { search as googleSearch, spellingCorrection } from "./google";
+export { searchOnGoogle, correctSpelling } from "./google";
 export { chat as chatGpt } from "./chatgpt";
-export { loadLink, loadContent } from "./wikipedia";
+export { getWikipediaLink, getWikipediaContent } from "./wikipedia";

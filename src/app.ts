@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
-import apiRouter from "./routes/api";
 import { origin } from "./config";
+import router from "./routes";
 
 const app = express();
 
@@ -13,6 +13,6 @@ app
       origin,
     })
   )
-  .use("/api", apiRouter);
+  .use(router);
 
 export default app;

@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { chat, getWiki, searchGoogle } from "../controllers";
+import { chat, getWikiData, searchGoogle } from "../controllers";
 
-const router = Router();
+const apiRouter = Router();
 
-router.post("/search", searchGoogle);
-router.post("/chat", chat);
-router.post("/getWiki", getWiki);
+apiRouter.post("/search", searchGoogle);
+apiRouter.post("/chat", chat);
+apiRouter.post("/wiki", getWikiData);
 
-export default router;
+export default apiRouter;
