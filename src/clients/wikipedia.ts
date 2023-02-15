@@ -28,6 +28,10 @@ export const loadContent = async (link: string | null) => {
       data += $(el).text();
     }
   );
+  const useFor = data
+    .replace(/\[\d+\]/g, "")
+    .match(/[^.?!]*(?<=[.?\s!])[dùng|giúp]+(?=[\s.?!])[^.?!]*[.?!]/gim)
+    ?.map((item) => item.trim());
 
-  return data;
+  return { useFor, data };
 };
