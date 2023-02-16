@@ -2,18 +2,57 @@ name: Node.js CI
 
 on:
   push:
-    branches: [master]
-  pull_request:
-    branches: [master]
+    branches: ["*"]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
       - name: Use Node.js
-        uses: actions/setup-node@v3.5.1
+        uses: actions/setup-node@v3
         with:
-          node-version: 18
-      - run: yarn install
-      - run: yarn test
+          node-version: 18.x
+          cache: "yarn"
+      - name: Install dependencies
+        run: yarn install
+      - name: Run tests
+        run: yarn test
+
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop' && (github.event_name == 'push' || github.event_name == 'merge')
+    needs: test
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_REGISTRY_USER }}
+          password: ${{ secrets.DOCKER_REGISTRY_PASS }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKER_REGISTRY_USER }}/${{ github.event.repository.name }}:latest
+      - name: Deploy to server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          script: |
+            docker stop $(docker ps -q --filter ancestor=${{ github.event.repository.name }}) || true
+            docker rm $(docker ps -aq --filter ancestor=${{ github.event.repository.name }}) || true
+            docker rmi $(docker images -q ${{ github.event.repository.name }}) || true
+            echo "${{ secrets.DOCKER_REGISTRY_PASS }}" | docker login --username ${{ secrets.DOCKER_REGISTRY_USER }} --password-stdin
+            docker run -d -p 8001:8001 --network=host \
+              -e CHAT_GPT_KEY=${{ secrets.CHAT_GPT_KEY }} \
+              -e GG_API_KEY=${{ secrets.GG_API_KEY }} \
+              -e GG_CX=${{ secrets.GG_CX }} \
+              ${{ secrets.DOCKER_REGISTRY_USER }}/${{ github.event.repository.name }}
