@@ -2,18 +2,36 @@ name: Node.js CI
 
 on:
   push:
-    branches: [master]
+    branches:
+      - "*"
   pull_request:
-    branches: [master]
+    branches: [develop]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
       - name: Use Node.js
         uses: actions/setup-node@v3.5.1
         with:
           node-version: 18
       - run: yarn install
       - run: yarn test
+
+  deploy:
+    if: github.ref == 'refs/heads/develop' && (github.event_name == 'push' || github.event_name == 'merge')
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: executing remote ssh commands using ssh key
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          script: |
+            docker ps -q --filter ancestor=${{ github.event.repository.name }} | xargs -r docker stop | xargs -r docker rm -f || true
+            docker images -q ${{ github.event.repository.name }} | xargs -r docker rmi -f || true
+            cd ${{ github.event.repository.name }} && docker build -t ${{ github.event.repository.name }} .
+            docker run -d -p 8001:8001 --network=host -e CHAT_GPT_KEY=${{ secrets.CHAT_GPT_KEY }} -e GG_API_KEY=${{ secrets.GG_API_KEY }} -e GG_CX=${{ secrets.GG_CX }} ${{ github.event.repository.name }}
