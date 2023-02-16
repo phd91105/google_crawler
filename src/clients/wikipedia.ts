@@ -25,7 +25,9 @@ export const getWikipediaLink = async (text: string, lang = "vi") => {
         : null;
 
     if (!link) {
-      const googleResults = await searchOnGoogle(text);
+      const googleResults = await searchOnGoogle(
+        `${text} site:${lang}.wikipedia.org`
+      );
       const firstResult = googleResults[0] || {};
       return firstResult.link || null;
     }
