@@ -10,6 +10,7 @@ const browser = await initializePuppeteer();
 
 // Search on Google using query string - takes query array as parameter
 export const searchOnGoogle = async (query: string[]) => {
+  if (_.isEmpty(query)) return [];
   try {
     const items = await Promise.all([
       ...query.map((keyword) => searchItem(keyword, browser, true)),
@@ -63,7 +64,7 @@ export const searchItem = async (
   const data = await page.evaluate(
     () =>
       (<HTMLElement>(
-        Array.from(document.querySelectorAll("h2")).find((el) =>
+        Array.from(document.getElementsByTagName("h2")).find((el) =>
           el.textContent?.includes("Đoạn trích nổi bật từ web")
         )?.nextElementSibling?.children[0]?.children[0]?.children[0]
           ?.children[0]
