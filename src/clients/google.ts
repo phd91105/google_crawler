@@ -3,6 +3,7 @@ import { Browser } from "puppeteer";
 import { initializePuppeteer } from "../config/puppeteer";
 import { googleSearchUrl } from "../constants";
 import { Group } from "../types";
+import { cleanText } from "../utils";
 
 const browser = await initializePuppeteer();
 
@@ -17,7 +18,9 @@ export const searchOnGoogle = async (query: string[]) => {
     const merged = _.map(grouped, (group: Group) => _.merge(...group));
 
     return _.values(merged);
-  } catch {
+  } catch (error) {
+    console.log(error);
+
     return [];
   }
 };
@@ -28,7 +31,7 @@ export const searchItem = async (
   isUsagesSearch = true
 ) => {
   const page = await browser.newPage();
-  await page.setViewport({ width: 720, height: 1280 });
+  await page.setViewport({ width: 1920, height: 1080 });
   await page.goto(googleSearchUrl);
 
   const inputHandle = await page.waitForXPath("//input[@name = 'q']");
@@ -53,6 +56,6 @@ export const searchItem = async (
 
   return {
     name: keyword,
-    [isUsagesSearch ? "usages" : "sideEffects"]: data || null,
+    [isUsagesSearch ? "usages" : "sideEffects"]: cleanText(data) || null,
   };
 };
