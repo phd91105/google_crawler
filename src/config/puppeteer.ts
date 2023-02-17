@@ -1,13 +1,11 @@
-import { createBrowserFetcher } from "puppeteer";
+import { executablePath } from "puppeteer";
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import { minimalArgs } from "../constants";
 
 export const initializePuppeteer = async () => {
-  const browserFetcher = createBrowserFetcher();
-  const revisionInfo = await browserFetcher.download("1083080");
   const browser = await puppeteer.launch({
-    executablePath: revisionInfo?.executablePath,
+    executablePath: executablePath(),
     headless: true,
     args: minimalArgs,
   });

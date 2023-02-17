@@ -30,6 +30,7 @@ export const minimalArgs = [
   "--no-first-run",
   "--no-pings",
   "--no-sandbox",
+  "--disabled-setupid-sandbox",
   "--no-zygote",
   "--password-store=basic",
   "--use-gl=swiftshader",
