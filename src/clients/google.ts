@@ -1,48 +1,58 @@
-import { customsearch } from "@googleapis/customsearch";
-import { AxiosResponse } from "axios";
-import { axios, googleConfig } from "../config";
-import { cleanText } from "../utils";
+import _ from "lodash";
+import { Browser } from "puppeteer";
+import { initializePuppeteer } from "../config/puppeteer";
+import { googleSearchUrl } from "../constants";
+import { Group } from "../types";
 
-export const searchOnGoogle = async (query: string, config = googleConfig) => {
-  const customSearch = customsearch("v1");
-  if (!query) {
-    return [];
-  }
+const browser = await initializePuppeteer();
 
+export const searchOnGoogle = async (query: string[]) => {
   try {
-    const response = await customSearch.cse.siterestrict.list({
-      ...config,
-      q: query,
-    });
+    const items = await Promise.all([
+      ...query.map((keyword) => searchItem(keyword, browser, true)),
+      ...query.map((keyword) => searchItem(keyword, browser, false)),
+    ]);
 
-    return response.data.items || [];
+    const grouped = _.groupBy(items, "name");
+    const merged = _.map(grouped, (group: Group) => _.merge(...group));
+
+    return _.values(merged);
   } catch {
     return [];
   }
 };
 
-export const correctSpelling = async (text: string): Promise<string> => {
-  const getCorrectedText = (response: AxiosResponse) => {
-    const data = JSON.parse(response.data.split("\n").pop());
-    const correctedText = data.pop().o;
-    return cleanText(correctedText);
+export const searchItem = async (
+  keyword: string,
+  browser: Browser,
+  isUsagesSearch = true
+) => {
+  const page = await browser.newPage();
+  await page.setViewport({ width: 720, height: 1280 });
+  await page.goto(googleSearchUrl);
+
+  const inputHandle = await page.waitForXPath("//input[@name = 'q']");
+  await inputHandle?.type(
+    `tác dụng ${!isUsagesSearch ? "phụ" : ""} của ${keyword}`
+  );
+
+  await page.keyboard.press("Enter");
+  await page.waitForNavigation();
+
+  const data = await page.evaluate(
+    () =>
+      (<HTMLElement>(
+        Array.from(document.querySelectorAll("h2")).find((el) =>
+          el.textContent?.includes("Đoạn trích nổi bật từ web")
+        )?.nextElementSibling?.children[0]?.children[0]?.children[0]
+          ?.children[0]
+      ))?.innerText
+  );
+
+  await page.close();
+
+  return {
+    name: keyword,
+    [isUsagesSearch ? "usages" : "sideEffects"]: data || null,
   };
-
-  try {
-    const response = await axios.get("/complete/search", {
-      baseURL: "https://www.google.com",
-      params: {
-        q: text,
-        client: "gws-wiz",
-        xssi: "t",
-        hl: "vi",
-      },
-    });
-
-    const correctedText = getCorrectedText(response);
-
-    return correctedText;
-  } catch {
-    return text;
-  }
 };

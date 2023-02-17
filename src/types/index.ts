@@ -1,5 +1,10 @@
-export type Wiki = {
-  name: string;
-  matches?: string[];
-  text?: string;
-};
+export type Group = [
+  {
+    name: string;
+    usages: string;
+  },
+  {
+    name: string;
+    sideEffects: string;
+  }
+];
