@@ -102,7 +102,7 @@ export const searchItem = async (
     return htmlElement?.innerText;
   });
 
-  // Close the browser page to prevent memory leaks
+  // Close the page to prevent memory leaks
   await page.close();
 
   return {

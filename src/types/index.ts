@@ -8,3 +8,7 @@ export type Group = [
     sideEffects: string;
   },
 ];
+
+export type Error = {
+  message?: string;
+};
