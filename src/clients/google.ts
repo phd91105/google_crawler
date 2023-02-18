@@ -34,7 +34,11 @@ export const searchOnGoogle = async (query: string[]) => {
     const merged = _.map(grouped, (group: Group) => _.merge(...group));
 
     // close browser connection
-    await browser.close();
+    if (process.env.IS_LOCAL == 'true') {
+      await browser.close();
+    } else {
+      browser.disconnect();
+    }
 
     return _.values(merged);
   } catch {
