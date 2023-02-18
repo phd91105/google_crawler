@@ -50,9 +50,39 @@ export const blockResources = [
 
 export const blockExt = /.(jpg|jpeg|png|gif|css)$/;
 
-export const googleSearchUrl = 'https://www.google.com/search?hl=vi';
+export const googleSearchUrl = (language = 'vi') =>
+  `https://www.google.com/search?hl=${language}`;
 
 export const subKeywords = {
-  usages: 'tác dụng',
-  sideEffects: 'tác dụng phụ',
+  vi: {
+    usages: 'tác dụng',
+    sideEffects: 'tác dụng phụ',
+  },
+  en: {
+    usages: 'uses of',
+    sideEffects: 'side effects of',
+  },
+};
+
+export const textForElement = {
+  vi: {
+    name: {
+      tag: 'span',
+      content: 'hiển thị kết quả cho',
+    },
+    data: {
+      tag: 'h2',
+      content: 'nổi bật',
+    },
+  },
+  en: {
+    name: {
+      tag: 'span',
+      content: 'results for',
+    },
+    data: {
+      tag: 'h2',
+      content: 'snippet from the web',
+    },
+  },
 };

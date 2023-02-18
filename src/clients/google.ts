@@ -7,8 +7,9 @@ import {
   blockResources,
   googleSearchUrl,
   subKeywords,
+  textForElement,
 } from '../constants';
-import { Group } from '../types';
+import { Group, Language } from '../types';
 import { cleanText, getCorrectedName, makeSearchQuery } from '../utils';
 
 const isLocal = process.env.IS_LOCAL === 'true';
@@ -40,8 +41,20 @@ const shouldBlockResource = (request: HTTPRequest) => {
   return isBlockedResource ? request.abort() : request.continue();
 };
 
+const getHtmlElementTextContent = (options: {
+  tag: string;
+  content: string;
+}) => {
+  const targetElement = Array.from(
+    document.getElementsByTagName(options.tag),
+  ).find((el) => el.textContent?.includes(options.content))?.nextElementSibling;
+
+  return targetElement?.textContent;
+};
+
 const searchForItem = async (
   keyword: string,
+  lang: Language,
   browser: Browser,
   isUsages = true,
 ) => {
@@ -54,32 +67,26 @@ const searchForItem = async (
   page.on('request', shouldBlockResource);
 
   const searchQuery = isUsages
-    ? makeSearchQuery(`${subKeywords.usages}+${keyword}`)
-    : makeSearchQuery(`${subKeywords.sideEffects}+${keyword}`);
-  await page.goto(`${googleSearchUrl}&q=${searchQuery}`);
+    ? makeSearchQuery(`${subKeywords[lang].usages}+${keyword}`)
+    : makeSearchQuery(`${subKeywords[lang].sideEffects}+${keyword}`);
+  await page.goto(`${googleSearchUrl(lang)}&q=${searchQuery}`);
 
   // Get contents of element
-  const { name, data } = await page.evaluate(() => {
-    const nameElement = Array.from(document.getElementsByTagName('span')).find(
-      (el) => el.textContent?.includes('hiển thị kết quả cho'),
-    )?.nextElementSibling;
-    const dataElement = Array.from(document.getElementsByTagName('h2')).find(
-      (el) => el.textContent?.includes('nổi bật'),
-    )?.nextElementSibling;
-
-    return { name: nameElement?.textContent, data: dataElement?.textContent };
-  });
+  const [name, data] = await Promise.all([
+    page.evaluate(getHtmlElementTextContent, textForElement[lang].name),
+    page.evaluate(getHtmlElementTextContent, textForElement[lang].data),
+  ]);
 
   await page.close();
 
   return {
     keyword,
-    corrected: name ? getCorrectedName(name, isUsages) : keyword,
+    corrected: name ? getCorrectedName(name, lang, isUsages) : keyword,
     [isUsages ? 'usages' : 'sideEffects']: data ? cleanText(data) : null,
   };
 };
 
-export const searchOnGoogle = async (query: string[]) => {
+export const searchOnGoogle = async (query: string[], lang: Language) => {
   if (_.isEmpty(query)) return [];
 
   // Initialize puppeteer browser
@@ -87,8 +94,8 @@ export const searchOnGoogle = async (query: string[]) => {
 
   try {
     const items = await Promise.all([
-      ...query.map((keyword) => searchForItem(keyword, browser, true)),
-      ...query.map((keyword) => searchForItem(keyword, browser, false)),
+      ...query.map((keyword) => searchForItem(keyword, lang, browser, true)),
+      ...query.map((keyword) => searchForItem(keyword, lang, browser, false)),
     ]);
 
     const grouped = _.groupBy(items, 'keyword');

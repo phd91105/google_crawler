@@ -12,3 +12,5 @@ export type Group = [
 export type Error = {
   message?: string;
 };
+
+export type Language = 'vi' | 'en';
