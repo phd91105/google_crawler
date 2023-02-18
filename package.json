@@ -8,7 +8,7 @@
   "scripts": {
     "start": "yarn clean && yarn build && node dist/index.js",
     "dev": "nodemon src/index.ts",
-    "build": "tsc-esm -p .",
+    "build": "tsc -p .",
     "clean": "rm -rf dist",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint --fix \"src/**/*.ts\"",
@@ -17,7 +17,6 @@
     "test": "yarn lint && yarn prettier"
   },
   "devDependencies": {
-    "@digitak/tsc-esm": "^3.1.4",
     "@types/cors": "^2.8.12",
     "@types/express": "^4.17.14",
     "@types/lodash": "^4.14.191",
