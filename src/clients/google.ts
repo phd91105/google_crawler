@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { Browser, KnownDevices } from 'puppeteer';
+import { Browser, connect, KnownDevices } from 'puppeteer';
 
 import { initializePuppeteer } from '../config/puppeteer';
 import { blockRessources, googleSearchUrl } from '../constants';
@@ -7,10 +7,17 @@ import { Group } from '../types';
 import { cleanText } from '../utils';
 
 // Initialize puppeteer browser
-const browser = await initializePuppeteer();
+const getBrowser = () =>
+  process.env.IS_LOCAL == 'true'
+    ? initializePuppeteer()
+    : connect({
+        browserWSEndpoint: 'ws://localhost:3000',
+      });
 
 // Search on Google using query string - takes query array as parameter
 export const searchOnGoogle = async (query: string[]) => {
+  const browser = await getBrowser();
+
   if (_.isEmpty(query)) return [];
 
   try {
@@ -23,6 +30,8 @@ export const searchOnGoogle = async (query: string[]) => {
     const grouped = _.groupBy(items, 'name');
     // merging all items in one object
     const merged = _.map(grouped, (group: Group) => _.merge(...group));
+
+    await browser.close();
 
     return _.values(merged);
   } catch {
