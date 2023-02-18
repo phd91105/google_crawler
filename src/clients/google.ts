@@ -89,9 +89,9 @@ export const searchItem = async (
 
   // Go to Google and execute search query
   keyword = keyword.replace(/\s\t/g, '+');
-  const query = !isUsagesSearch
-    ? `tác+dụng+phụ+${keyword}`
-    : `tác+dụng+${keyword}`;
+  const query = isUsagesSearch
+    ? `tác+dụng+${keyword}`
+    : `tác+dụng+phụ+${keyword}`;
   await page.goto(`${googleSearchUrl}&q=${query}`);
 
   // Get contents of element
