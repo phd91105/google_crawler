@@ -61,15 +61,12 @@ export const searchItem = async (
   await page.goto(`${googleSearchUrl}&q=${query}`);
 
   // Get contents of element
-  const data = await page.evaluate(
-    () =>
-      (<HTMLElement>(
-        Array.from(document.getElementsByTagName('h2')).find((el) =>
-          el.textContent?.includes('Đoạn trích nổi bật từ web'),
-        )?.nextElementSibling?.children[0]?.children[0]?.children[0]
-          ?.children[0]
-      ))?.innerText,
-  );
+  const data = await page.evaluate(() => {
+    const htmlElement = Array.from(document.getElementsByTagName('h2')).find(
+      (el) => el.textContent?.includes('Đoạn trích nổi bật từ web'),
+    )?.nextElementSibling as HTMLElement;
+    return htmlElement?.innerText;
+  });
 
   // Close the browser page to prevent memory leaks
   await page.close();
