@@ -77,7 +77,6 @@ const searchForItem = async (
     page.evaluate(getHtmlElementTextContent, textForElement[lang].data),
   ]);
 
-  await page.screenshot({ path: Math.random() + '.png' });
   await page.close();
 
   return {
