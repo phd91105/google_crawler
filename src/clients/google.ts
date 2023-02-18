@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { Browser } from 'puppeteer';
+import { Browser, KnownDevices } from 'puppeteer';
 
 import { initializePuppeteer } from '../config/puppeteer';
 import { blockRessources, googleSearchUrl } from '../constants';
@@ -38,7 +38,8 @@ export const searchItem = async (
 ) => {
   // Creating page with mobile view
   const page = await browser.newPage();
-  await page.setViewport({ width: 240, height: 320, isMobile: true });
+  const iPhone = KnownDevices['iPhone 6'];
+  await page.emulate(iPhone);
   await page.setRequestInterception(true);
 
   // Aborting requests if they matches list of blocked ressources
