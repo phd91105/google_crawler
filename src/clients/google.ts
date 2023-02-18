@@ -18,11 +18,11 @@ const setupBrowser = async () => {
   let browser: Browser;
 
   if (isLocal) {
-    // run chromium browser in headless mode
+    // Run chromium browser in headless mode
     browser = await initializeBrowser();
   } else {
-    // browserless connection mode
-    // docs: https://www.browserless.io/docs/docker
+    // Browserless connection mode
+    // Docs: https://www.browserless.io/docs/docker
     browser = await connect({
       browserWSEndpoint: 'ws://localhost:3000', // docker:browserless/chrome socket
     });
@@ -49,7 +49,7 @@ const getHtmlElementTextContent = (options: {
     document.getElementsByTagName(options.tag),
   ).find((el) => el.textContent?.includes(options.content))?.nextElementSibling;
 
-  return targetElement?.textContent;
+  return (<HTMLElement>targetElement)?.innerText;
 };
 
 const searchForItem = async (
@@ -112,7 +112,7 @@ export const searchOnGoogle = async (
 
     return [];
   } finally {
-    // close browser connection
+    // Close browser connection
     if (isLocal) {
       await browser.close();
     } else {
