@@ -1,3 +1,5 @@
+import { Language } from './types';
+
 export const minimalArgs = [
   '--autoplay-policy=user-gesture-required',
   '--disable-background-networking',
@@ -50,7 +52,7 @@ export const blockResources = [
 
 export const blockExt = /.(jpg|jpeg|png|gif|css)$/;
 
-export const googleSearchUrl = (language = 'vi') =>
+export const googleSearchUrl = (language: Language) =>
   `https://www.google.com/search?hl=${language}`;
 
 export const subKeywords = {

@@ -86,7 +86,10 @@ const searchForItem = async (
   };
 };
 
-export const searchOnGoogle = async (query: string[], lang: Language) => {
+export const searchOnGoogle = async (
+  query: string[],
+  lang: Language = 'vi',
+) => {
   if (_.isEmpty(query)) return [];
 
   // Initialize puppeteer browser
