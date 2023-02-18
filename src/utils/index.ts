@@ -4,7 +4,7 @@ import { Language } from '../types';
 export const cleanText = (text: string) =>
   text
     .replace(
-      /(\n\n.*$|[^.?!]*(?<=[.?\s!])http.*$|mục\skhác.*$|xem\stất\scả|more\sitems*$|\n.+\d{4}|\d.+\d{4})/is,
+      /(\n\n.*$|[^\\.]*(?<=)http.*$|\n.+\d{4}|\d.+\d{4}|mục\skhác.*$|xem\stất\scả|more\sitems*$)/is,
       '',
     )
     .trim();
