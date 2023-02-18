@@ -1,13 +1,17 @@
 import { subKeywords } from '../constants';
 import { Language } from '../types';
 
-export const cleanText = (text: string) =>
-  text
-    .replace(
-      /(\n\n.*$|[^\\.(!?…]*(?<=)http.*$|\d{1,2}\s([a-zA-Z]+)\s\d{1,2},\s\d{4}|mục\skhác.*$|xem\stất\scả+\n|more\sitems*$)/is,
-      '',
-    )
+export const cleanText = (text: string) => {
+  const result = text
+    .replace(/\n\n.*$/, '')
+    .replace(/[^\\.(!?…]*(?<=)http.*$/, '')
+    .replace(/\d{1,2}\s([a-zA-Z]+)\s\d{1,2},\s\d{4}/, '')
+    .replace(/mục\skhác.+$/is, '')
+    .replace(/more\sitems.+$/is, '')
+    .replace(/^xem\stất\scả+\n/is, '')
     .trim();
+  return result;
+};
 
 export const makeSearchQuery = (keyword: string) =>
   keyword.replace(/\s+/g, '+');

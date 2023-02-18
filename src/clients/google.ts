@@ -72,10 +72,19 @@ const searchForItem = async (
   await page.goto(`${googleSearchUrl(lang)}&q=${searchQuery}`);
 
   // Get contents of element
-  const [name, data] = await Promise.all([
-    page.evaluate(getHtmlElementTextContent, textForElement[lang].name),
-    page.evaluate(getHtmlElementTextContent, textForElement[lang].data),
-  ]);
+  const { name, data } = await page.evaluate((textForElement) => {
+    const nameElement = Array.from(
+      document.getElementsByTagName(textForElement.name.tag),
+    ).find((el) => el.textContent?.includes(textForElement.name.content))
+      ?.nextElementSibling as HTMLElement;
+
+    const dataElement = Array.from(
+      document.getElementsByTagName(textForElement.data.tag),
+    ).find((el) => el.textContent?.includes(textForElement.data.content))
+      ?.nextElementSibling as HTMLElement;
+
+    return { name: nameElement?.innerText, data: dataElement?.innerText };
+  }, textForElement[lang]);
 
   await page.close();
 
