@@ -7,17 +7,25 @@ import { Group } from '../types';
 import { cleanText } from '../utils';
 
 // Set browser options by environment
-const getBrowser = () =>
-  process.env.IS_LOCAL == 'true'
-    ? initializePuppeteer()
-    : connect({
-        browserWSEndpoint: 'ws://localhost:3000',
-      });
+const getBrowser = async () => {
+  let browser: Browser;
+  const isLocal = process.env.IS_LOCAL === 'true';
+
+  if (isLocal) {
+    browser = await initializePuppeteer();
+  } else {
+    browser = await connect({
+      browserWSEndpoint: 'ws://localhost:3000',
+    });
+  }
+
+  return { browser, isLocal };
+};
 
 // Search on Google using query string - takes query array as parameter
 export const searchOnGoogle = async (query: string[]) => {
   // Initialize puppeteer browser
-  const browser = await getBrowser();
+  const { browser, isLocal } = await getBrowser();
 
   if (_.isEmpty(query)) return [];
 
@@ -40,7 +48,7 @@ export const searchOnGoogle = async (query: string[]) => {
     return [];
   } finally {
     // close browser connection
-    if (process.env.IS_LOCAL == 'true') {
+    if (isLocal) {
       await browser.close();
     } else {
       browser.disconnect();
