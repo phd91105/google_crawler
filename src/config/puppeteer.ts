@@ -12,7 +12,7 @@ export const initializePuppeteer = async () => {
       ...minimalArgs,
       ...(process.env.IS_LOCAL === 'true' ? [] : ['--no-sandbox']),
     ],
-    userDataDir: './cache',
+    userDataDir: '.cache',
   });
 
   puppeteer.use(StealthPlugin());
