@@ -52,7 +52,7 @@ export const searchItem = async (
   const page = await browser.newPage();
 
   // set emulation device
-  const iPhone = KnownDevices['iPhone 11'];
+  const iPhone = KnownDevices['iPhone 5'];
   await page.emulate(iPhone);
 
   // Aborting requests if they matches list of blocked ressources
