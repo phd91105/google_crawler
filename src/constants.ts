@@ -36,7 +36,7 @@ export const minimalArgs = [
   '--use-mock-keychain',
 ];
 
-export const blockRessources: string[] = [
+export const blockResources = [
   'image',
   'stylesheet',
   'media',
@@ -49,3 +49,8 @@ export const blockRessources: string[] = [
 ];
 
 export const googleSearchUrl = 'https://www.google.com/search?hl=vi';
+
+export const subKeywords = {
+  usages: 'tác dụng',
+  sideEffects: 'tác dụng phụ',
+};

@@ -1,15 +1,16 @@
 import _ from 'lodash';
-import { Browser, connect, KnownDevices } from 'puppeteer';
+import { Browser, connect, HTTPRequest, KnownDevices } from 'puppeteer';
 
 import { initializePuppeteer } from '../config/puppeteer';
-import { blockRessources, googleSearchUrl } from '../constants';
+import { blockResources, googleSearchUrl, subKeywords } from '../constants';
 import { Group } from '../types';
-import { cleanText } from '../utils';
+import { cleanText, getCorrectedName, makeSearchQuery } from '../utils';
+
+const isLocal = process.env.IS_LOCAL === 'true';
 
 // Set browser options by environment
-const getBrowser = async () => {
+const initializeBrowser = async () => {
   let browser: Browser;
-  const isLocal = process.env.IS_LOCAL === 'true';
 
   if (isLocal) {
     // run chromium as a local browser in headless mode
@@ -26,26 +27,85 @@ const getBrowser = async () => {
   return { browser, isLocal };
 };
 
+// determine if a resource should be blocked or allowed
+const shouldBlockResource = (request: HTTPRequest) => {
+  const url = request.url();
+
+  const isBlockedResource =
+    blockResources.some((type) => request.resourceType() === type) ||
+    /.(jpg|jpeg|png|gif|css)$/.test(url);
+
+  return isBlockedResource ? request.abort() : request.continue();
+};
+
+// Search for an item - keyword and browser are passed as parameters
+const searchForItem = async (
+  keyword: string,
+  browser: Browser,
+  isUsages = true,
+) => {
+  // Creating page with mobile view
+  const page = await browser.newPage();
+
+  // set emulation device
+  const iPhone = KnownDevices['iPhone 5'];
+  await page.emulate(iPhone);
+
+  // Aborting requests if they matches list of blocked ressources
+  await page.setRequestInterception(true);
+  page.on('request', shouldBlockResource);
+
+  // Go to Google and execute search query
+  const searchQuery = isUsages
+    ? makeSearchQuery(`${subKeywords.usages}+${keyword}`)
+    : makeSearchQuery(`${subKeywords.sideEffects}+${keyword}`);
+  await page.goto(`${googleSearchUrl}&q=${searchQuery}`);
+
+  // Get contents of element
+  const { name, data } = await page.evaluate(() => {
+    const nameElement = Array.from(document.getElementsByTagName('span')).find(
+      (el) => el.textContent?.includes('hiển thị kết quả cho'),
+    )?.nextElementSibling;
+    const dataElement = Array.from(document.getElementsByTagName('h2')).find(
+      (el) => el.textContent?.includes('nổi bật'),
+    )?.nextElementSibling;
+
+    return { name: nameElement?.textContent, data: dataElement?.textContent };
+  });
+
+  // Close the page to prevent memory leaks
+  await page.close();
+
+  return {
+    keyword,
+    corrected: name ? getCorrectedName(name, isUsages) : keyword,
+    [isUsages ? 'usages' : 'sideEffects']: data ? cleanText(data) : null,
+  };
+};
+
 // Search on Google using query string - takes query array as parameter
 export const searchOnGoogle = async (query: string[]) => {
-  // Initialize puppeteer browser
-  const { browser, isLocal } = await getBrowser();
-
   if (_.isEmpty(query)) return [];
+
+  // Initialize puppeteer browser
+  const { browser, isLocal } = await initializeBrowser();
 
   try {
     // execute all search query
     const items = await Promise.all([
-      ...query.map((keyword) => searchItem(keyword, browser, true)),
-      ...query.map((keyword) => searchItem(keyword, browser, false)),
+      ...query.map((keyword) => searchForItem(keyword, browser, true)),
+      ...query.map((keyword) => searchForItem(keyword, browser, false)),
     ]);
 
     // grouping by keyword name
-    const grouped = _.groupBy(items, 'name');
-    // merging all items in one object
-    const merged = _.map(grouped, (group: Group) => _.merge(...group));
+    const grouped = _.groupBy(items, 'keyword');
 
-    return _.values(merged);
+    // merging all items in one object
+    const result = _.values(
+      _.map(grouped, (group: Group) => _.merge(...group)),
+    );
+
+    return result;
   } catch (error) {
     console.error(error);
 
@@ -58,55 +118,4 @@ export const searchOnGoogle = async (query: string[]) => {
       browser.disconnect();
     }
   }
-};
-
-// Search for an item - keyword and browser are passed as parameters
-export const searchItem = async (
-  keyword: string,
-  browser: Browser,
-  isUsagesSearch = true,
-) => {
-  // Creating page with mobile view
-  const page = await browser.newPage();
-
-  // set emulation device
-  const iPhone = KnownDevices['iPhone 5'];
-  await page.emulate(iPhone);
-
-  // Aborting requests if they matches list of blocked ressources
-  await page.setRequestInterception(true);
-  page.on('request', (request) => {
-    const url = request.url();
-    const isBlockedResource =
-      blockRessources.includes(request.resourceType()) ||
-      url.includes('.jpg') ||
-      url.includes('.jpeg') ||
-      url.includes('.png') ||
-      url.includes('.gif') ||
-      url.includes('.css');
-    isBlockedResource ? request.abort() : request.continue();
-  });
-
-  // Go to Google and execute search query
-  keyword = keyword.replace(/\s\t/g, '+');
-  const query = isUsagesSearch
-    ? `tác+dụng+${keyword}`
-    : `tác+dụng+phụ+${keyword}`;
-  await page.goto(`${googleSearchUrl}&q=${query}`);
-
-  // Get contents of element
-  const data = await page.evaluate(() => {
-    const htmlElement = Array.from(document.getElementsByTagName('h2')).find(
-      (el) => el.textContent?.includes('Đoạn trích nổi bật từ web'),
-    )?.nextElementSibling as HTMLElement;
-    return htmlElement?.innerText;
-  });
-
-  // Close the page to prevent memory leaks
-  await page.close();
-
-  return {
-    name: keyword,
-    [isUsagesSearch ? 'usages' : 'sideEffects']: data ? cleanText(data) : null,
-  };
 };
