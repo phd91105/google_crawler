@@ -8,26 +8,23 @@ import { cleanText, getCorrectedName, makeSearchQuery } from '../utils';
 
 const isLocal = process.env.IS_LOCAL === 'true';
 
-// Set browser options by environment
 const initializeBrowser = async () => {
   let browser: Browser;
 
   if (isLocal) {
-    // run chromium as a local browser in headless mode
+    // run chromium browser in headless mode
     browser = await initializePuppeteer();
   } else {
     // browserless connection mode
-    // run browserless chromium in docker for better performance
     // docs: https://www.browserless.io/docs/docker
     browser = await connect({
-      browserWSEndpoint: 'ws://localhost:3000', // browserless/chrome socket
+      browserWSEndpoint: 'ws://localhost:3000', // docker:browserless/chrome socket
     });
   }
 
   return { browser, isLocal };
 };
 
-// determine if a resource should be blocked or allowed
 const shouldBlockResource = (request: HTTPRequest) => {
   const url = request.url();
 
@@ -38,24 +35,19 @@ const shouldBlockResource = (request: HTTPRequest) => {
   return isBlockedResource ? request.abort() : request.continue();
 };
 
-// Search for an item - keyword and browser are passed as parameters
 const searchForItem = async (
   keyword: string,
   browser: Browser,
   isUsages = true,
 ) => {
-  // Creating page with mobile view
   const page = await browser.newPage();
 
-  // set emulation device
   const iPhone = KnownDevices['iPhone 5'];
   await page.emulate(iPhone);
 
-  // Aborting requests if they matches list of blocked ressources
   await page.setRequestInterception(true);
   page.on('request', shouldBlockResource);
 
-  // Go to Google and execute search query
   const searchQuery = isUsages
     ? makeSearchQuery(`${subKeywords.usages}+${keyword}`)
     : makeSearchQuery(`${subKeywords.sideEffects}+${keyword}`);
@@ -73,7 +65,6 @@ const searchForItem = async (
     return { name: nameElement?.textContent, data: dataElement?.textContent };
   });
 
-  // Close the page to prevent memory leaks
   await page.close();
 
   return {
@@ -83,7 +74,6 @@ const searchForItem = async (
   };
 };
 
-// Search on Google using query string - takes query array as parameter
 export const searchOnGoogle = async (query: string[]) => {
   if (_.isEmpty(query)) return [];
 
@@ -91,16 +81,13 @@ export const searchOnGoogle = async (query: string[]) => {
   const { browser, isLocal } = await initializeBrowser();
 
   try {
-    // execute all search query
     const items = await Promise.all([
       ...query.map((keyword) => searchForItem(keyword, browser, true)),
       ...query.map((keyword) => searchForItem(keyword, browser, false)),
     ]);
 
-    // grouping by keyword name
     const grouped = _.groupBy(items, 'keyword');
 
-    // merging all items in one object
     const result = _.values(
       _.map(grouped, (group: Group) => _.merge(...group)),
     );
