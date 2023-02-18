@@ -19,7 +19,7 @@ const getBrowser = async () => {
     // run browserless chromium in docker for better performance
     // docs: https://www.browserless.io/docs/docker
     browser = await connect({
-      browserWSEndpoint: 'ws://localhost:3000',
+      browserWSEndpoint: 'ws://localhost:3000', // browserless/chrome socket
     });
   }
 
