@@ -1,5 +1,5 @@
-import app from "./app";
-import { port } from "./config";
+import app from './app';
+import { port } from './config';
 
 const main = async () => {
   try {

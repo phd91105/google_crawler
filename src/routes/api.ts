@@ -1,8 +1,9 @@
-import { Router } from "express";
-import { searchGoogle } from "../controllers";
+import { Router } from 'express';
+
+import { searchGoogle } from '../controllers';
 
 const apiRouter = Router();
 
-apiRouter.post("/search", searchGoogle);
+apiRouter.post('/search', searchGoogle);
 
 export default apiRouter;

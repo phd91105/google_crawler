@@ -1,5 +1,6 @@
-import { searchOnGoogle } from "../clients";
-import { Request, Response } from "express";
+import { Request, Response } from 'express';
+
+import { searchOnGoogle } from '../clients';
 
 export const searchGoogle = async (request: Request, response: Response) => {
   try {

@@ -6,5 +6,5 @@ export type Group = [
   {
     name: string;
     sideEffects: string;
-  }
+  },
 ];

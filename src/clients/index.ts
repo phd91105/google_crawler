@@ -1,1 +1,1 @@
-export { searchOnGoogle } from "./google";
+export { searchOnGoogle } from './google';

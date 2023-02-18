@@ -1,9 +1,10 @@
-import _ from "lodash";
-import { Browser } from "puppeteer";
-import { initializePuppeteer } from "../config/puppeteer";
-import { blockRessources, googleSearchUrl } from "../constants";
-import { Group } from "../types";
-import { cleanText } from "../utils";
+import _ from 'lodash';
+import { Browser } from 'puppeteer';
+
+import { initializePuppeteer } from '../config/puppeteer';
+import { blockRessources, googleSearchUrl } from '../constants';
+import { Group } from '../types';
+import { cleanText } from '../utils';
 
 // Initialize puppeteer browser
 const browser = await initializePuppeteer();
@@ -11,6 +12,7 @@ const browser = await initializePuppeteer();
 // Search on Google using query string - takes query array as parameter
 export const searchOnGoogle = async (query: string[]) => {
   if (_.isEmpty(query)) return [];
+
   try {
     const items = await Promise.all([
       ...query.map((keyword) => searchItem(keyword, browser, true)),
@@ -18,7 +20,7 @@ export const searchOnGoogle = async (query: string[]) => {
     ]);
 
     // grouping by keyword name
-    const grouped = _.groupBy(items, "name");
+    const grouped = _.groupBy(items, 'name');
     // merging all items in one object
     const merged = _.map(grouped, (group: Group) => _.merge(...group));
 
@@ -32,43 +34,41 @@ export const searchOnGoogle = async (query: string[]) => {
 export const searchItem = async (
   keyword: string,
   browser: Browser,
-  isUsagesSearch = true
+  isUsagesSearch = true,
 ) => {
-  // creating page with mobile view
+  // Creating page with mobile view
   const page = await browser.newPage();
-  await page.setViewport({ width: 375, height: 667, isMobile: true });
+  await page.setViewport({ width: 240, height: 320, isMobile: true });
   await page.setRequestInterception(true);
 
-  // aborting requests if they matches list of blocked ressources
-  page.on("request", (request) => {
-    if (
+  // Aborting requests if they matches list of blocked ressources
+  page.on('request', (request) => {
+    const url = request.url();
+    const isBlockedResource =
       blockRessources.includes(request.resourceType()) ||
-      request.url().includes(".jpg") ||
-      request.url().includes(".jpeg") ||
-      request.url().includes(".png") ||
-      request.url().includes(".gif") ||
-      request.url().includes(".css")
-    ) {
-      request.abort();
-    } else request.continue();
+      url.includes('.jpg') ||
+      url.includes('.jpeg') ||
+      url.includes('.png') ||
+      url.includes('.gif') ||
+      url.includes('.css');
+    isBlockedResource ? request.abort() : request.continue();
   });
 
-  // go to google and execute search query
-  await page.goto(
-    `${googleSearchUrl}&q=tác+dụng+${
-      !isUsagesSearch ? "phụ+" : ""
-    }của+${keyword.replace(/\s/g, "+")}`
-  );
+  // Go to Google and execute search query
+  const query = !isUsagesSearch
+    ? `tác+dụng+phụ+${keyword.replace(/\s/g, '+')}`
+    : `tác+dụng+${keyword.replace(/\s/g, '+')}`;
+  await page.goto(`${googleSearchUrl}&q=${query}`);
 
-  // get contents of element
+  // Get contents of element
   const data = await page.evaluate(
     () =>
       (<HTMLElement>(
-        Array.from(document.getElementsByTagName("h2")).find((el) =>
-          el.textContent?.includes("Đoạn trích nổi bật từ web")
+        Array.from(document.getElementsByTagName('h2')).find((el) =>
+          el.textContent?.includes('Đoạn trích nổi bật từ web'),
         )?.nextElementSibling?.children[0]?.children[0]?.children[0]
           ?.children[0]
-      ))?.innerText
+      ))?.innerText,
   );
 
   // Close the browser page to prevent memory leaks
@@ -76,6 +76,6 @@ export const searchItem = async (
 
   return {
     name: keyword,
-    [isUsagesSearch ? "usages" : "sideEffects"]: data ? cleanText(data) : null,
+    [isUsagesSearch ? 'usages' : 'sideEffects']: data ? cleanText(data) : null,
   };
 };
