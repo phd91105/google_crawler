@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import { Browser, connect, HTTPRequest, KnownDevices } from 'puppeteer';
 
+import { browserWSEndpoint } from '../config';
 import { initializeBrowser } from '../config/puppeteer';
 import {
   blockExt,
@@ -24,7 +25,7 @@ const setupBrowser = async () => {
     // Browserless connection mode
     // Docs: https://www.browserless.io/docs/docker
     browser = await connect({
-      browserWSEndpoint: 'ws://localhost:3000', // docker:browserless/chrome socket
+      browserWSEndpoint,
     });
   }
 
@@ -39,17 +40,6 @@ const shouldBlockResource = (request: HTTPRequest) => {
     blockExt.test(url);
 
   return isBlockedResource ? request.abort() : request.continue();
-};
-
-const getHtmlElementTextContent = (options: {
-  tag: string;
-  content: string;
-}) => {
-  const targetElement = Array.from(
-    document.getElementsByTagName(options.tag),
-  ).find((el) => el.textContent?.includes(options.content))?.nextElementSibling;
-
-  return (<HTMLElement>targetElement)?.innerText;
 };
 
 const searchForItem = async (
