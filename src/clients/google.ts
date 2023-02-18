@@ -27,7 +27,7 @@ const setupBrowser = async () => {
     });
   }
 
-  return { browser, isLocal };
+  return browser;
 };
 
 const shouldBlockResource = (request: HTTPRequest) => {
@@ -83,7 +83,7 @@ export const searchOnGoogle = async (query: string[]) => {
   if (_.isEmpty(query)) return [];
 
   // Initialize puppeteer browser
-  const { browser, isLocal } = await setupBrowser();
+  const browser = await setupBrowser();
 
   try {
     const items = await Promise.all([
