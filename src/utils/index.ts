@@ -3,15 +3,14 @@ import { Language } from '../types';
 
 export const cleanText = (text: string) =>
   text
-    .replace(/\n\n.*$/s, '')
-    .replace(/http.*$/s, '')
-    .replace(/mục\skhác.*$/is, '')
-    .replace(/xem\stất\scả/is, '')
-    .replace(/\n.+\d{4}/, '')
-    .replace(/\d.+\d{4}/, '')
+    .replace(
+      /(\n\n.*$|[^.?!]*(?<=[.?\s!])http.*$|mục\skhác.*$|xem\stất\scả|more\sitems*$|\n.+\d{4}|\d.+\d{4})/is,
+      '',
+    )
     .trim();
 
-export const makeSearchQuery = (keyword: string) => keyword.replace(/\s/g, '+');
+export const makeSearchQuery = (keyword: string) =>
+  keyword.replace(/\s+/g, '+');
 
 export const getCorrectedName = (
   text: string,
