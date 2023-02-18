@@ -12,8 +12,12 @@ const getBrowser = async () => {
   const isLocal = process.env.IS_LOCAL === 'true';
 
   if (isLocal) {
+    // run chromium as a local browser in headless mode
     browser = await initializePuppeteer();
   } else {
+    // browserless connection mode
+    // run browserless chromium in docker for better performance
+    // docs: https://www.browserless.io/docs/docker
     browser = await connect({
       browserWSEndpoint: 'ws://localhost:3000',
     });
