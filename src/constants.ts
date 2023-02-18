@@ -48,6 +48,8 @@ export const blockResources = [
   'imageset',
 ];
 
+export const blockExt = /.(jpg|jpeg|png|gif|css)$/;
+
 export const googleSearchUrl = 'https://www.google.com/search?hl=vi';
 
 export const subKeywords = {

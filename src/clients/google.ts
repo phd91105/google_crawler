@@ -1,19 +1,24 @@
 import _ from 'lodash';
 import { Browser, connect, HTTPRequest, KnownDevices } from 'puppeteer';
 
-import { initializePuppeteer } from '../config/puppeteer';
-import { blockResources, googleSearchUrl, subKeywords } from '../constants';
+import { initializeBrowser } from '../config/puppeteer';
+import {
+  blockExt,
+  blockResources,
+  googleSearchUrl,
+  subKeywords,
+} from '../constants';
 import { Group } from '../types';
 import { cleanText, getCorrectedName, makeSearchQuery } from '../utils';
 
 const isLocal = process.env.IS_LOCAL === 'true';
 
-const initializeBrowser = async () => {
+const setupBrowser = async () => {
   let browser: Browser;
 
   if (isLocal) {
     // run chromium browser in headless mode
-    browser = await initializePuppeteer();
+    browser = await initializeBrowser();
   } else {
     // browserless connection mode
     // docs: https://www.browserless.io/docs/docker
@@ -30,7 +35,7 @@ const shouldBlockResource = (request: HTTPRequest) => {
 
   const isBlockedResource =
     blockResources.some((type) => request.resourceType() === type) ||
-    /.(jpg|jpeg|png|gif|css)$/.test(url);
+    blockExt.test(url);
 
   return isBlockedResource ? request.abort() : request.continue();
 };
@@ -78,7 +83,7 @@ export const searchOnGoogle = async (query: string[]) => {
   if (_.isEmpty(query)) return [];
 
   // Initialize puppeteer browser
-  const { browser, isLocal } = await initializeBrowser();
+  const { browser, isLocal } = await setupBrowser();
 
   try {
     const items = await Promise.all([
@@ -87,7 +92,6 @@ export const searchOnGoogle = async (query: string[]) => {
     ]);
 
     const grouped = _.groupBy(items, 'keyword');
-
     const result = _.values(
       _.map(grouped, (group: Group) => _.merge(...group)),
     );

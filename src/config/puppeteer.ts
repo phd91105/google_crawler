@@ -4,7 +4,7 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 
 import { minimalArgs } from '../constants';
 
-export const initializePuppeteer = async () => {
+export const initializeBrowser = async () => {
   const browser = await puppeteer.launch({
     executablePath: executablePath(),
     headless: true,
