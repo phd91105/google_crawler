@@ -53,7 +53,7 @@ const searchForItem = async (
   const page = await browser.newPage();
   page.setDefaultNavigationTimeout(90 * 1000);
 
-  const userAgent = new UserAgent();
+  const userAgent = new UserAgent({ deviceCategory: 'mobile' });
   await page.setUserAgent(userAgent.toString());
   await page.setViewport({
     width: userAgent.data.viewportWidth,
