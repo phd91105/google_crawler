@@ -78,11 +78,13 @@ const searchForItem = async (
     return { name: nameElement?.innerText, data: dataElement?.innerText };
   }, textForElement[lang]);
 
+  const corrected = name ? getCorrectedKeyword(name, lang, isUsages) : keyword;
+
   await page.close();
 
   return {
     keyword,
-    corrected: name ? getCorrectedKeyword(name, lang, isUsages) : keyword,
+    corrected: _.startCase(corrected),
     [isUsages ? 'usages' : 'sideEffects']: data ? cleanText(data) : null,
   };
 };
