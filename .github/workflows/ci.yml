@@ -2,7 +2,7 @@ name: Node.js CI
 
 on:
   push:
-    branches: ["*"]
+    branches: ['*']
 
 jobs:
   test:
@@ -12,8 +12,8 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18.x
-          cache: "yarn"
+          node-version: 16.x
+          cache: 'yarn'
       - name: Install dependencies
         run: yarn install
       - name: Run tests
@@ -45,14 +45,13 @@ jobs:
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
+          password: ${{ secrets.PASS }}
+          # key: ${{ secrets.KEY }}
           script: |
             docker stop $(docker ps -q --filter ancestor=${{ github.event.repository.name }}) || true
             docker rm $(docker ps -aq --filter ancestor=${{ github.event.repository.name }}) || true
             docker rmi $(docker images -q ${{ github.event.repository.name }}) || true
             echo "${{ secrets.DOCKER_REGISTRY_PASS }}" | docker login --username ${{ secrets.DOCKER_REGISTRY_USER }} --password-stdin
-            docker run -d -p 8001:8001 --network=host \
-              -e CHAT_GPT_KEY=${{ secrets.CHAT_GPT_KEY }} \
-              -e GG_API_KEY=${{ secrets.GG_API_KEY }} \
-              -e GG_CX=${{ secrets.GG_CX }} \
+            docker run -d --network=host \
+              -e NODE_ENV=${{ secrets.NODE_ENV }} \
               ${{ secrets.DOCKER_REGISTRY_USER }}/${{ github.event.repository.name }}
