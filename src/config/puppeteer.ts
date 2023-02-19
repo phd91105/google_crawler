@@ -1,4 +1,6 @@
 import { executablePath, launch } from 'puppeteer';
+import puppeteer from 'puppeteer-extra';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 
 import { minimalArgs } from '../constants';
 
@@ -9,5 +11,6 @@ export const initializeBrowser = async () => {
     args: minimalArgs,
   });
 
+  puppeteer.use(StealthPlugin());
   return browser;
 };

@@ -6,9 +6,8 @@ export const cleanText = (text: string) => {
     .replace(/\n\n.*$/, '')
     .replace(/[^\\.(!?…]*(?<=)http\S.*[\n*,\s*].*$/, '')
     .replace(/\d{1,2}\s([a-zA-Z]+)\s\d{1,2},\s\d{4}.*$/, '')
-    .replace(/mục\skhác.*$/is, '')
-    .replace(/more\sitems.*$/is, '')
-    .replace(/^xem\stất\scả*\n/is, '')
+    .replace(/(mục\skhác|more\sitems).*$/is, '')
+    .replace(/(.*xem\stất\scả|.*view\sall)*\n/is, '')
     .trim();
   return result;
 };
