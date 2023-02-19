@@ -8,5 +8,4 @@ WORKDIR /app
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
 RUN yarn build
-EXPOSE 8001
 CMD ["yarn", "start"]
