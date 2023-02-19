@@ -1,20 +1,12 @@
-# Use an official Node.js runtime as the base image
-FROM node:16-alpine
-
-# Set the working directory in the container
+FROM node:16-alpine AS dependencies
 WORKDIR /app
-
-# Copy the package.json and yarn.lock files to the container
 COPY package.json yarn.lock ./
-
-# Install the project dependencies
 RUN yarn install
 
-# Copy the rest of the project files to the container
+FROM node:16-alpine AS build
+WORKDIR /app
+COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
-
-# Build the TypeScript code to JavaScript
 RUN yarn build
-
-# Specify the command to run when the container starts
+EXPOSE 8001
 CMD ["yarn", "start"]
