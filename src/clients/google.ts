@@ -53,11 +53,13 @@ const searchForItem = async (
   const page = await browser.newPage();
   page.setDefaultNavigationTimeout(90 * 1000);
 
-  const userAgent = new UserAgent({ deviceCategory: 'mobile' });
-  await page.setUserAgent(userAgent.toString());
+  // Create a random mobile user-agent to avoid Google reCaptcha
+  const mobileUserAgent = new UserAgent({ deviceCategory: 'mobile' });
+
+  await page.setUserAgent(mobileUserAgent.toString());
   await page.setViewport({
-    width: userAgent.data.viewportWidth,
-    height: userAgent.data.viewportHeight,
+    width: mobileUserAgent.data.viewportWidth,
+    height: mobileUserAgent.data.viewportHeight,
   });
 
   await page.setRequestInterception(true);
@@ -72,13 +74,15 @@ const searchForItem = async (
   const { name, data } = await page.evaluate((textForElement) => {
     const nameElement = Array.from(
       document.getElementsByTagName(textForElement.name.tag),
-    ).find((el) => el.textContent?.includes(textForElement.name.content))
-      ?.nextElementSibling as HTMLElement;
+    ).find((element) =>
+      element.textContent?.includes(textForElement.name.content),
+    )?.nextElementSibling as HTMLElement;
 
     const dataElement = Array.from(
       document.getElementsByTagName(textForElement.data.tag),
-    ).find((el) => el.textContent?.includes(textForElement.data.content))
-      ?.nextElementSibling as HTMLElement;
+    ).find((element) =>
+      element.textContent?.includes(textForElement.data.content),
+    )?.nextElementSibling as HTMLElement;
 
     return { name: nameElement?.innerText, data: dataElement?.innerText };
   }, textForElement[lang]);
