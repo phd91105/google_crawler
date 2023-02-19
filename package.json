@@ -21,6 +21,7 @@
     "@types/express": "^4.17.14",
     "@types/lodash": "^4.14.191",
     "@types/node": "^18.11.7",
+    "@types/user-agents": "^1.0.2",
     "@typescript-eslint/eslint-plugin": "^5.41.0",
     "@typescript-eslint/parser": "^5.41.0",
     "eslint": "^8.26.0",
@@ -38,6 +39,8 @@
     "lodash": "^4.17.21",
     "puppeteer": "^19.7.1",
     "puppeteer-extra": "^3.3.4",
-    "puppeteer-extra-plugin-stealth": "^2.11.1"
+    "puppeteer-extra-plugin-recaptcha": "^3.6.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.1",
+    "user-agents": "^1.0.1295"
   }
 }

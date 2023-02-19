@@ -1,5 +1,6 @@
 import _ from 'lodash';
-import { Browser, connect, HTTPRequest, KnownDevices } from 'puppeteer';
+import { Browser, connect, HTTPRequest } from 'puppeteer';
+import UserAgent from 'user-agents';
 
 import {
   initializeBrowser,
@@ -52,8 +53,12 @@ const searchForItem = async (
   const page = await browser.newPage();
   page.setDefaultNavigationTimeout(90 * 1000);
 
-  const iPhone = KnownDevices['iPhone 5'];
-  await page.emulate(iPhone);
+  const userAgent = new UserAgent();
+  await page.setUserAgent(userAgent.toString());
+  await page.setViewport({
+    width: userAgent.data.viewportWidth,
+    height: userAgent.data.viewportHeight,
+  });
 
   await page.setRequestInterception(true);
   page.on('request', shouldBlockRequest);
