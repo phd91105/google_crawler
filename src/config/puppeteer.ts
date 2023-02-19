@@ -1,4 +1,4 @@
-import { executablePath,launch } from 'puppeteer';
+import { executablePath, launch } from 'puppeteer';
 
 import { minimalArgs } from '../constants';
 
