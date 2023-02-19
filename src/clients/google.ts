@@ -1,12 +1,8 @@
 import _ from 'lodash';
-import { Browser, connect, HTTPRequest } from 'puppeteer';
+import { Browser, HTTPRequest } from 'puppeteer';
 import UserAgent from 'user-agents';
 
-import {
-  initializeBrowser,
-  isLocalEnvironment,
-  puppeteerBrowserWSEndpoint,
-} from '../config';
+import { initializeBrowser, isLocalEnvironment } from '../config';
 import {
   blockedExtensions,
   blockedResourceTypes,
@@ -16,23 +12,6 @@ import {
 } from '../constants';
 import { Error, Language, ResponseGroup } from '../types';
 import { cleanText, getCorrectedKeyword, makeSearchQuery } from '../utils';
-
-const setupBrowser = async () => {
-  let browser: Browser;
-
-  if (isLocalEnvironment) {
-    // Run chromium browser in headless mode
-    browser = await initializeBrowser();
-  } else {
-    // Browserless connection mode
-    // Docs: https://www.browserless.io/docs/docker
-    browser = await connect({
-      browserWSEndpoint: puppeteerBrowserWSEndpoint,
-    });
-  }
-
-  return browser;
-};
 
 const shouldBlockRequest = (request: HTTPRequest) => {
   const url = request.url();
@@ -53,7 +32,7 @@ const searchForItem = async (
   const page = await browser.newPage();
   page.setDefaultNavigationTimeout(90 * 1000);
 
-  // Create a random mobile user-agent to avoid Google reCaptcha
+  // Set random user-agent to avoid Google reCaptcha
   const mobileUserAgent = new UserAgent({ deviceCategory: 'mobile' });
 
   await page.setUserAgent(mobileUserAgent.toString());
@@ -105,7 +84,7 @@ export const searchOnGoogle = async (
   if (_.isEmpty(queryKeywords)) return [];
 
   // Initialize puppeteer browser
-  const browser = await setupBrowser();
+  const browser = await initializeBrowser();
 
   try {
     const keywordUsagesPromises = queryKeywords.map((keyword) =>
