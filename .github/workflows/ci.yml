@@ -55,4 +55,5 @@ jobs:
             docker run -d -p ${{ secrets.PORT }}:${{ secrets.PORT }} \
               -e PORT=${{ secrets.PORT }} \
               -e NODE_ENV=${{ secrets.NODE_ENV }} \
+              -e BROWSER_WSE=${{ secrets.BROWSER_WSE }} \
               ${{ secrets.DOCKER_REGISTRY_USER }}/${{ github.event.repository.name }}
