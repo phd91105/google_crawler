@@ -38,7 +38,7 @@ export const minimalArgs = [
   '--use-mock-keychain',
 ];
 
-export const blockResources = [
+export const blockedResourceTypes = [
   'image',
   'stylesheet',
   'media',
@@ -50,7 +50,7 @@ export const blockResources = [
   'imageset',
 ];
 
-export const blockExt = /.(jpg|jpeg|png|gif|css)$/;
+export const blockedExtensions = /.(jpg|jpeg|png|gif|css)$/;
 
 export const googleSearchUrl = (language: Language) =>
   `https://www.google.com/search?hl=${language}`;

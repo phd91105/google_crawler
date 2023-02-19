@@ -16,7 +16,7 @@ export const cleanText = (text: string) => {
 export const makeSearchQuery = (keyword: string) =>
   keyword.replace(/\s+/g, '+');
 
-export const getCorrectedName = (
+export const getCorrectedKeyword = (
   text: string,
   lang: Language,
   isUsages: boolean,

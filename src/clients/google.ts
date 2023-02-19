@@ -1,43 +1,44 @@
 import _ from 'lodash';
 import { Browser, connect, HTTPRequest, KnownDevices } from 'puppeteer';
 
-import { browserWSEndpoint } from '../config';
-import { initializeBrowser } from '../config/puppeteer';
 import {
-  blockExt,
-  blockResources,
+  initializeBrowser,
+  isLocalEnvironment,
+  puppeteerBrowserWSEndpoint,
+} from '../config';
+import {
+  blockedExtensions,
+  blockedResourceTypes,
   googleSearchUrl,
   subKeywords,
   textForElement,
 } from '../constants';
-import { Group, Language } from '../types';
-import { cleanText, getCorrectedName, makeSearchQuery } from '../utils';
-
-const isLocal = process.env.IS_LOCAL === 'true';
+import { Error, Language, ResponseGroup } from '../types';
+import { cleanText, getCorrectedKeyword, makeSearchQuery } from '../utils';
 
 const setupBrowser = async () => {
   let browser: Browser;
 
-  if (isLocal) {
+  if (isLocalEnvironment) {
     // Run chromium browser in headless mode
     browser = await initializeBrowser();
   } else {
     // Browserless connection mode
     // Docs: https://www.browserless.io/docs/docker
     browser = await connect({
-      browserWSEndpoint,
+      browserWSEndpoint: puppeteerBrowserWSEndpoint,
     });
   }
 
   return browser;
 };
 
-const shouldBlockResource = (request: HTTPRequest) => {
+const shouldBlockRequest = (request: HTTPRequest) => {
   const url = request.url();
 
   const isBlockedResource =
-    blockResources.some((type) => request.resourceType() === type) ||
-    blockExt.test(url);
+    blockedResourceTypes.some((type) => request.resourceType() === type) ||
+    blockedExtensions.test(url);
 
   return isBlockedResource ? request.abort() : request.continue();
 };
@@ -46,7 +47,7 @@ const searchForItem = async (
   keyword: string,
   lang: Language,
   browser: Browser,
-  isUsages = true,
+  isUsages: boolean,
 ) => {
   const page = await browser.newPage();
 
@@ -54,7 +55,7 @@ const searchForItem = async (
   await page.emulate(iPhone);
 
   await page.setRequestInterception(true);
-  page.on('request', shouldBlockResource);
+  page.on('request', shouldBlockRequest);
 
   const searchQuery = isUsages
     ? makeSearchQuery(`${subKeywords[lang].usages}+${keyword}`)
@@ -80,39 +81,45 @@ const searchForItem = async (
 
   return {
     keyword,
-    corrected: name ? getCorrectedName(name, lang, isUsages) : keyword,
+    corrected: name ? getCorrectedKeyword(name, lang, isUsages) : keyword,
     [isUsages ? 'usages' : 'sideEffects']: data ? cleanText(data) : null,
   };
 };
 
 export const searchOnGoogle = async (
-  query: string[],
+  queryKeywords: string[],
   lang: Language = 'vi',
 ) => {
-  if (_.isEmpty(query)) return [];
+  if (_.isEmpty(queryKeywords)) return [];
 
   // Initialize puppeteer browser
   const browser = await setupBrowser();
 
   try {
-    const items = await Promise.all([
-      ...query.map((keyword) => searchForItem(keyword, lang, browser, true)),
-      ...query.map((keyword) => searchForItem(keyword, lang, browser, false)),
-    ]);
-
-    const grouped = _.groupBy(items, 'keyword');
-    const result = _.values(
-      _.map(grouped, (group: Group) => _.merge(...group)),
+    const keywordUsagesPromises = queryKeywords.map((keyword) =>
+      searchForItem(keyword, lang, browser, true),
+    );
+    const keywordSideEffectsPromises = queryKeywords.map((keyword) =>
+      searchForItem(keyword, lang, browser, false),
     );
 
-    return result;
-  } catch (error) {
-    console.error(error);
+    const items = await Promise.all([
+      ...keywordUsagesPromises,
+      ...keywordSideEffectsPromises,
+    ]);
 
-    return [];
+    const groupedItems = _.groupBy(items, 'keyword');
+    const mergedItems = _.mapValues(groupedItems, (group: ResponseGroup) =>
+      _.merge(...group),
+    );
+    const results = _.values(mergedItems);
+
+    return results;
+  } catch (error) {
+    throw new Error((<Error>error).message);
   } finally {
     // Close browser connection
-    if (isLocal) {
+    if (isLocalEnvironment) {
       await browser.close();
     } else {
       browser.disconnect();

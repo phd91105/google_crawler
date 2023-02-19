@@ -1,4 +1,4 @@
-export type Group = [
+export type ResponseGroup = [
   {
     name: string;
     usages: string;
