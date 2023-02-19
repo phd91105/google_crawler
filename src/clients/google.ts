@@ -50,6 +50,7 @@ const searchForItem = async (
   isUsages: boolean,
 ) => {
   const page = await browser.newPage();
+  page.setDefaultNavigationTimeout(90 * 1000);
 
   const iPhone = KnownDevices['iPhone 5'];
   await page.emulate(iPhone);
