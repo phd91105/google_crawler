@@ -48,9 +48,9 @@ jobs:
           password: ${{ secrets.PASS }}
           # key: ${{ secrets.KEY }}
           script: |
-            docker stop $(docker ps -q --filter ancestor=${{ github.event.repository.name }}) || true
-            docker rm $(docker ps -aq --filter ancestor=${{ github.event.repository.name }}) || true
-            docker rmi $(docker images -q ${{ github.event.repository.name }}) || true
+            docker stop $(docker ps -q --filter ancestor=${{ secrets.DOCKER_REGISTRY_USER }}/${{ github.event.repository.name }}) || true
+            docker rm $(docker ps -aq --filter ancestor=${{ secrets.DOCKER_REGISTRY_USER }}/${{ github.event.repository.name }}) || true
+            docker rmi $(docker images -q ${{ secrets.DOCKER_REGISTRY_USER }}/${{ github.event.repository.name }}) || true
             echo "${{ secrets.DOCKER_REGISTRY_PASS }}" | docker login --username ${{ secrets.DOCKER_REGISTRY_USER }} --password-stdin
             docker run -d -p 8001:8001 --network=host \
               -e NODE_ENV=${{ secrets.NODE_ENV }} \
