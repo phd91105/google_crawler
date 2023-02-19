@@ -52,6 +52,7 @@ jobs:
             docker rm $(docker ps -aq --filter ancestor=${{ secrets.DOCKER_REGISTRY_USER }}/${{ github.event.repository.name }}) || true
             docker rmi $(docker images -q ${{ secrets.DOCKER_REGISTRY_USER }}/${{ github.event.repository.name }}) || true
             echo "${{ secrets.DOCKER_REGISTRY_PASS }}" | docker login --username ${{ secrets.DOCKER_REGISTRY_USER }} --password-stdin
-            docker run -d -p 8001:8001 \
+            docker run -d -p ${{ secrets.PORT }}:${{ secrets.PORT }} \
+              -e PORT=${{ secrets.PORT }} \
               -e NODE_ENV=${{ secrets.NODE_ENV }} \
               ${{ secrets.DOCKER_REGISTRY_USER }}/${{ github.event.repository.name }}
