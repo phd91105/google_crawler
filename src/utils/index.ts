@@ -3,10 +3,9 @@ import { Language } from '../types';
 
 export const cleanText = (text: string) => {
   const result = text
-    .replace(/\n\n.*$/, '')
-    .replace(/[^\\.(!?…]*(?<=)http\S.*[\n*,\s*].*$/, '')
-    .replace(/\d{1,2}\s([a-zA-Z]+)\s\d{1,2},\s\d{4}.*$/, '')
-    .replace(/(mục\skhác|more\sitems).+$/is, '')
+    .replace(/[^\\.)!?…]*(?<=)http\S.*[\n*,\s*].*$/, '')
+    .replace(/\d{1,2}\s([a-zA-Z]+)\s\d{1,2},\s\d{4}\S.*[\n*,\s*].*$/, '')
+    .replace(/(mục\skhác|more\sitems)\S.*[\n*,\s*].*$/is, '')
     .replace(/(.*xem\stất\scả|.*view\sall)+\n/is, '')
     .trim();
   return result;
