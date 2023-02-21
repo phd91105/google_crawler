@@ -7,6 +7,7 @@ export const cleanText = (text: string) => {
     .replace(/\d{1,2}\s([a-zA-Z]+)\s\d{1,2},\s\d{4}.*$/, '')
     .replace(/(mục\skhác|more\sitems).+$/is, '')
     .replace(/(.*xem\stất\scả|.*view\sall)+\n/is, '')
+    .replace(/\d{1}\.\d?\.?\s?/g, '')
     .trim();
   return result;
 };
