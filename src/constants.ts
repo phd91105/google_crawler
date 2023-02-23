@@ -70,6 +70,7 @@ export const textForElement = {
   vi: {
     name: {
       tag: 'span',
+      top: 'bạn muốn tìm',
       content: 'hiển thị kết quả cho',
     },
     data: {
@@ -80,6 +81,7 @@ export const textForElement = {
   en: {
     name: {
       tag: 'span',
+      top: 'you mean',
       content: 'results for',
     },
     data: {

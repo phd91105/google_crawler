@@ -3,11 +3,13 @@ import { Language } from '../types';
 
 export const cleanText = (text: string) => {
   const result = text
+    .replace(/\s+/g, ' ')
     .replace(/[^\\.)!?…]*(?<=)http\S.*[\n*,\s*].*$/, '')
     .replace(/\d{1,2}\s([a-zA-Z]+)\s\d{1,2},\s\d{4}.*$/, '')
     .replace(/(mục\skhác|more\sitems).+$/is, '')
     .replace(/(.*xem\stất\scả|.*view\sall)+\n/is, '')
     .replace(/\d{1,2}\.\d?\.?\s?/g, '')
+    .replace(/(<[/]?\w+>)|(\[\d+\])/g, '')
     .trim();
   return result;
 };

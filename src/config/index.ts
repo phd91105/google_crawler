@@ -8,4 +8,5 @@ export const puppeteerBrowserWSEndpoint =
 
 export const isLocalEnvironment = process.env.NODE_ENV === 'local';
 
+export { instance as axios } from './axios';
 export { initializeBrowser } from './puppeteer';
