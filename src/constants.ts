@@ -71,7 +71,7 @@ export const textForElement = {
     name: {
       tag: 'span',
       top: 'bạn muốn tìm',
-      content: 'hiển thị kết quả cho',
+      content: 'kết quả cho',
     },
     data: {
       tag: 'h2',

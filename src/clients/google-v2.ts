@@ -59,11 +59,12 @@ const searchForItem = async (
     data = $('span:eq(5)').parent().parent().text();
   }
 
+  const result = cleanText(data);
   const dataIsNull = data.match(/([a-zA-Z0-9-]+\.)+[a-zA-Z0-9-]+/gi);
 
   return {
     keyword,
     corrected: _.startCase(keyword),
-    [isUsages ? 'usages' : 'sideEffects']: !dataIsNull ? cleanText(data) : null,
+    [isUsages ? 'usages' : 'sideEffects']: !dataIsNull ? result : null,
   };
 };
