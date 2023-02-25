@@ -1,17 +1,16 @@
 import { subKeywords } from '../constants';
 import { Language } from '../types';
 
-export const cleanText = (text: string) => {
-  const result = text
-    .replace(/\s+/g, ' ')
-    .replace(/[^\\.)!?…]*(?<=)http\S.*[\n*,\s*].*$/, '')
-    .replace(/\d{1,2}\s([a-zA-Z]+)\s\d{1,2},\s\d{4}.*$/, '')
-    .replace(/(mục\skhác|more\sitems).+$/is, '')
-    .replace(/(.*xem\stất\scả|.*view\sall)+\n/is, '')
-    .replace(/\d{1,2}\.\d?\.?\s?/g, '')
-    .replace(/(<[/]?\w+>)|(\[\d+\])/g, '')
-    .trim();
-  return result;
+export const cleanText = (text: string): string => {
+  return text
+    .replace(/[^.)!?…](?<=)http\S.*[\n*,\s*].*$/, '') // Remove URLs.
+    .replace(/\d{1,2}\s([a-zA-Z]+)\s\d{1,2},\s\d{4}.*$/, '') // Remove dates.
+    .replace(/(mục\skhác|more\sitems).+$/i, '') // Remove "more items".
+    .replace(/(.*xem\stất\scả|.*view\sall)+\n/i, '') // Remove "view all".
+    .replace(/<[/]?\w+>|[\d+]/g, '') // Remove HTML tags and numbers.
+    .replace(/\.\.\./g, '') // Remove ellipsises.
+    .replace(/(\s*[.,]\s*)+/g, '$1') // Replace consecutive white spaces with a single space.
+    .trim(); // Remove leading/trailing white spaces.
 };
 
 export const makeSearchQuery = (keyword: string) =>
